@@ -804,13 +804,14 @@ class Stocker():
             print(related_queries[search]['rising'].head())
 
             # Upsample the data for joining with training data
-            trends = trends.resample('D')
+            #trends = trends.resample('D')
+            trends = trends.resample('D').interpolate()
 
             trends = trends.reset_index(level=0)
             trends = trends.rename(columns={'date': 'ds', search: 'freq'})
 
             # Interpolate the frequency
-            trends['freq'] = trends['freq'].interpolate()
+            #trends['freq'] = trends['freq'].interpolate()
 
             # Merge with the training data
             train = pd.merge(train, trends, on = 'ds', how = 'inner')
