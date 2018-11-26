@@ -16,8 +16,7 @@ import matplotlib
 # Contains a number of visualizations and analysis methods
 class Stocker():
 
-    # Initialization requires a ticker symbol
-    def __init__(self, ticker, dataframe = None):
+    def __init__(self, ticker, exchange='WIKI', dataframe = None):
 
         # Enforce capitalization
         ticker = ticker.upper()
@@ -29,82 +28,16 @@ class Stocker():
         # quandl.ApiConfig.api_key = 'YourKeyHere'
 
         # Retrieval the financial data
-        stock = dataframe
+        if dataframe is not None:
+            stock = dataframe
+        else:
+            try:
+                stock = quandl.get('%s/%s' % (exchange, ticker))
 
-        # Set the index to a column called Date
-        stock = stock.reset_index(level=0)
-
-        # Columns required for prophet
-        stock['ds'] = stock['Date']
-
-        if ('Adj. Close' not in stock.columns):
-            stock['Adj. Close'] = stock['Close']
-            stock['Adj. Open'] = stock['Open']
-
-        stock['y'] = stock['Adj. Close']
-        stock['Daily Change'] = stock['Adj. Close'] - stock['Adj. Open']
-
-        # Data assigned as class attribute
-        self.stock = stock.copy()
-
-        # Minimum and maximum date in range
-        self.min_date = min(stock['Date'])
-        self.max_date = max(stock['Date'])
-
-        # Find max and min prices and dates on which they occurred
-        self.max_price = np.max(self.stock['y'])
-        self.min_price = np.min(self.stock['y'])
-
-        self.min_price_date = self.stock[self.stock['y'] == self.min_price]['Date']
-        self.min_price_date = self.min_price_date[self.min_price_date.index[0]]
-        self.max_price_date = self.stock[self.stock['y'] == self.max_price]['Date']
-        self.max_price_date = self.max_price_date[self.max_price_date.index[0]]
-
-        # The starting price (starting with the opening price)
-        self.starting_price = float(self.stock.ix[0, 'Adj. Open'])
-
-        # The most recent price
-        self.most_recent_price = float(self.stock.ix[len(self.stock) - 1, 'y'])
-
-        # Whether or not to round dates
-        self.round_dates = True
-
-        # Number of years of data to train on
-        self.training_years = 3
-
-        # Prophet parameters
-        # Default prior from library
-        self.changepoint_prior_scale = 0.05
-        self.weekly_seasonality = False
-        self.daily_seasonality = False
-        self.monthly_seasonality = True
-        self.yearly_seasonality = True
-        self.changepoints = None
-
-        print('{} Stocker Initialized. Data covers {} to {}.'.format(self.symbol,
-                                                                     self.min_date.date(),
-                                                                     self.max_date.date()))
-
-
-    def __init__(self, ticker, exchange='WIKI'):
-
-        # Enforce capitalization
-        ticker = ticker.upper()
-
-        # Symbol is used for labeling plots
-        self.symbol = ticker
-
-        # Use Personal Api Key
-        # quandl.ApiConfig.api_key = 'YourKeyHere'
-
-        # Retrieval the financial data
-        try:
-            stock = quandl.get('%s/%s' % (exchange, ticker))
-
-        except Exception as e:
-            print('Error Retrieving Data.')
-            print(e)
-            return
+            except Exception as e:
+                print('Error Retrieving Data.')
+                print(e)
+                return
 
         # Set the index to a column called Date
         stock = stock.reset_index(level=0)
