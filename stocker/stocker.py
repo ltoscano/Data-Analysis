@@ -794,7 +794,6 @@ class Stocker():
             trends, related_queries = self.retrieve_google_trends(search, date_range)
 
             #if (trends is None)  or (related_queries is None):
-            print (related_queries[search]['top'] is None)
             if (trends is None)  or (related_queries is None) or (related_queries[search]['top'] is None) or (related_queries[search]['rising'] is None):
                 print('No search trends found for %s' % search)
                 return
